@@ -83,17 +83,17 @@ $(document).ready(function () {
     }
 
     function updateButtons() {
-        if (curSection === 0) {
-            $prevButton.hide();
-        }
-        else {
+        if (curSection > 0) {
             $prevButton.show();
         }
+        else {
+            $prevButton.hide();
+        }
 
-        if (curSection >= sections.length - 1) {
-            $nextButton.hide();
-        } else {
+        if (curSection < sections.length - 1) {
             $nextButton.show();
+        } else {
+            $nextButton.hide();
         }
     }
 
