@@ -1,10 +1,5 @@
 $(document).ready(function () {
 
-    // Prevent default event action
-    function preventDefaultAction(e) {
-        e.preventDefault ? e.preventDefault() : (e.returnValue = false);
-    }
-
     function Section() {
         this.title = "";
         this.items = [];
@@ -15,8 +10,7 @@ $(document).ready(function () {
     let curSection = 0;
 
     const $markdownInput = $("#markdownInput");
-    const $sectionNav = $("#sectionNav");
-    const $renderedContent = $("#renderedContent");
+    const $stepper = $("#stepper");
     const $prevButton = $("#prevButton");
     const $nextButton = $("#nextButton");
 
@@ -34,7 +28,7 @@ $(document).ready(function () {
         let sectionOpen = false;
         let section = new Section();
 
-        parsed.forEach(function (item, index) {
+        parsed.forEach(function (item) {
             if (item.type === "heading_open" && item.tag === "h1") {
                 if (sectionOpen) {
                     sections.push(section);
@@ -64,26 +58,51 @@ $(document).ready(function () {
         }
     }
 
-    function updateSectionNav() {
-        $sectionNav.html("");
+    function updateStepper() {
+        $stepper.html('');
         sections.forEach(function (section, idx) {
-            let elem = section.title;
-            if (idx !== curSection) {
-                elem = '<a href="#' + idx + '">' + elem + '</a>';
+            const number = '<span class="circle">' + (idx + 1) + '</span>';
+            const label = '<span class="label">' + section.title + '</span>';
+            const link = '<a href="#' + idx + '">' + number + label + '</a>';
+            let liClass = '';
+            let content = '';
+            if (idx < curSection) {
+                liClass = 'completed';
+            } else if (idx === curSection) {
+                liClass = 'active';
+                const rendered = md.renderer.render(sections[curSection].items, {}, {});
+                content = '<div class="step-content">' + rendered + '</div>';
             }
-            $sectionNav.append('<li class="h6 my-4">' + elem + '</li>')
+            const li = '<li id="section' + idx + '" class="' + liClass + '">' + link + content + '</li>';
+            $stepper.append(li);
         });
     }
 
-    function updateRenderedContent() {
-        $renderedContent.html(md.renderer.render(sections[curSection].items, {}, {}));
+    function scrollToCurSection() {
+        $('#stepperWrapper').scrollTo($('#section' + curSection));
+    }
+
+    function updateButtons() {
+        if (curSection === 0) {
+            $prevButton.hide();
+        }
+        else {
+            $prevButton.show();
+        }
+
+        if (curSection >= sections.length - 1) {
+            $nextButton.hide();
+        } else {
+            $nextButton.show();
+        }
     }
 
     function updateAll() {
         setCurSection();
         updateSections();
-        updateSectionNav();
-        updateRenderedContent();
+        updateStepper();
+        updateButtons();
+        scrollToCurSection();
     }
 
     $prevButton.click(function () {
